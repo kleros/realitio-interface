@@ -1,0 +1,27 @@
+{
+  "name": "escrow-evidence-interface",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Sam Vitello <sam.j.vitello@gmail.com>",
+  "license": "MIT",
+  "homepage": "./",
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build"
+  },
+  "dependencies": {
+    "antd": "^3.16.2",
+    "lodash": "^4.17.11",
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6",
+    "react-scripts": "^2.1.8",
+    "styled-components": "^4.2.0",
+    "web3": "1.0.0-beta.36"
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ]
+}
