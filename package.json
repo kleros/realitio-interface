@@ -22,7 +22,8 @@
     "not op_mini all"
   ],
   "volta": {
-    "node": "10.24.1"
+    "node": "10.24.1",
+    "yarn": "1.22.15"
   },
   "prettier": {
     "tabWidth": 2
