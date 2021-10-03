@@ -126,7 +126,11 @@ class RealitioDisplayInterface extends Component {
         }}
       >
         <div>
-          <img src={RealityLogo} alt="Logo of reality.eth" />
+          <img
+            src={RealityLogo}
+            alt="Logo of reality.eth"
+            style={{ maxWidth: "100%" }}
+          />
         </div>
         <hr
           style={{
