@@ -61,11 +61,11 @@ class RealitioDisplayInterface extends Component {
     const questionText = questionEventLog[0].returnValues.question.split("\u241f");
     question.text = questionText;
 
-    this.setState({ question, template, chainID, arbitrableContractAddress, arbitratorContractAddress, realitioContractAddress });
+    this.setState({ question, template, chainID, realitioContractAddress });
   }
 
   render() {
-    const { question, template, chainID, arbitrableContractAddress, arbitratorContractAddress, realitioContractAddress } = this.state;
+    const { question, template, chainID, realitioContractAddress } = this.state;
     if (!question) return <div />;
 
     for (var i = 0; i < question.text.length; i++) {
