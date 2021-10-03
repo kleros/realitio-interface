@@ -5,112 +5,67 @@ import RealitioContract from "../assets/contracts/realitio.json";
 import RealitioProxyContract from "../assets/contracts/realitio-proxy.json";
 import RealityLogo from "../assets/images/realitio_logo.png";
 
-const web3 = new Web3(
-  window.web3
-    ? window.web3.currentProvider ||
-      "https://mainnet.infura.io/v3/668b3268d5b241b5bab5c6cb886e4c61"
-    : "https://mainnet.infura.io/v3/668b3268d5b241b5bab5c6cb886e4c61"
-);
-// Global CSS
-
 class RealitioDisplayInterface extends Component {
   state = { question: null };
 
   async componentDidMount() {
     if (window.location.search[0] !== "?") return;
-    const message = JSON.parse(
-      window.location.search
-        .substring(1)
-        .replace(/%22/g, '"')
-        .replace(/%7B/g, "{")
-        .replace(/%3A/g, ":")
-        .replace(/%2C/g, ",")
-        .replace(/%7D/g, "}")
-    );
 
-    const {
-      arbitrableContractAddress,
-      arbitratorContractAddress,
-      disputeID,
-    } = message;
+    const message = JSON.parse(decodeURIComponent(window.location.search.substring(1)));
 
-    if (!arbitrableContractAddress || !disputeID || !arbitratorContractAddress)
-      return;
+    const { arbitrableContractAddress, arbitratorContractAddress, disputeID, chainID, jsonRpcUrl } = message;
+
+    const web3 = new Web3(decodeURIComponent(jsonRpcUrl) || window.web3.currentProvider);
+
+    if (!arbitrableContractAddress || !disputeID || !arbitratorContractAddress) return;
 
     let question = {};
 
-    const realitioProxyContractInstance = new web3.eth.Contract(
-      RealitioProxyContract.abi,
-      arbitrableContractAddress
-    );
+    const realitioProxyContractInstance = new web3.eth.Contract(RealitioProxyContract.abi, arbitrableContractAddress);
 
-    const realitioContractAddress = await realitioProxyContractInstance.methods
-      .realitio()
-      .call();
-    const realitioContractInstance = new web3.eth.Contract(
-      RealitioContract.abi,
-      realitioContractAddress
-    );
+    const realitioContractAddress = await realitioProxyContractInstance.methods.realitio().call();
+    const realitioContractInstance = new web3.eth.Contract(RealitioContract.abi, realitioContractAddress);
 
-    console.debug(`realitio ${realitioContractAddress}`);
-
-    const disputeIDToQuestionIDLogs = await realitioProxyContractInstance.getPastEvents(
-      "DisputeIDToQuestionID",
-      {
-        filter: {
-          _disputeID: disputeID,
-        },
-        fromBlock: 0,
-        toBlock: "latest",
-      }
-    );
+    const disputeIDToQuestionIDLogs = await realitioProxyContractInstance.getPastEvents("DisputeIDToQuestionID", {
+      filter: {
+        _disputeID: disputeID,
+      },
+      fromBlock: 0,
+      toBlock: "latest",
+    });
 
     if (disputeIDToQuestionIDLogs.length !== 1) return;
 
     const questionID = disputeIDToQuestionIDLogs[0].returnValues._questionID;
     question.questionID = questionID;
 
-    console.debug(`questionID ${questionID}`);
-
-    const questionEventLog = await realitioContractInstance.getPastEvents(
-      "LogNewQuestion",
-      {
-        filter: {
-          question_id: questionID,
-        },
-        fromBlock: 0,
-        toBlock: "latest",
-      }
-    );
+    const questionEventLog = await realitioContractInstance.getPastEvents("LogNewQuestion", {
+      filter: {
+        question_id: questionID,
+      },
+      fromBlock: 0,
+      toBlock: "latest",
+    });
 
     const templateID = questionEventLog[0].returnValues.template_id;
-    const templateEventLog = await realitioContractInstance.getPastEvents(
-      "LogNewTemplate",
-      {
-        filter: {
-          template_id: templateID,
-        },
-        fromBlock: 0,
-        toBlock: "latest",
-      }
-    );
-
-    console.debug(`templateID ${templateID}`);
-    console.debug(templateEventLog);
+    const templateEventLog = await realitioContractInstance.getPastEvents("LogNewTemplate", {
+      filter: {
+        template_id: templateID,
+      },
+      fromBlock: 0,
+      toBlock: "latest",
+    });
 
     const template = JSON.parse(templateEventLog[0].returnValues.question_text);
-    console.debug(template);
 
-    const questionText = questionEventLog[0].returnValues.question.split(
-      "\u241f"
-    );
+    const questionText = questionEventLog[0].returnValues.question.split("\u241f");
     question.text = questionText;
 
-    this.setState({ question, template });
+    this.setState({ question, template, chainID, arbitrableContractAddress, arbitratorContractAddress, realitioContractAddress });
   }
 
   render() {
-    const { question, template } = this.state;
+    const { question, template, chainID, arbitrableContractAddress, arbitratorContractAddress, realitioContractAddress } = this.state;
     if (!question) return <div />;
 
     for (var i = 0; i < question.text.length; i++) {
@@ -126,11 +81,7 @@ class RealitioDisplayInterface extends Component {
         }}
       >
         <div>
-          <img
-            src={RealityLogo}
-            alt="Logo of reality.eth"
-            style={{ maxWidth: "100%" }}
-          />
+          <img src={RealityLogo} alt="Logo of reality.eth" style={{ maxWidth: "100%" }} />
         </div>
         <hr
           style={{
@@ -138,8 +89,7 @@ class RealitioDisplayInterface extends Component {
             border: "none",
             backgroundSize: "contain",
             color: "#27b4ee",
-            background:
-              "linear-gradient(45deg, #24b3ec 0%, #24b3ec 93%, #b9f9fb  93%, #b9f9fb  95%, #dcfb6c 95%)",
+            background: "linear-gradient(45deg, #24b3ec 0%, #24b3ec 93%, #b9f9fb  93%, #b9f9fb  95%, #dcfb6c 95%)",
           }}
         />
         <div
@@ -155,7 +105,7 @@ class RealitioDisplayInterface extends Component {
         </div>
         <a
           style={{ color: "#2093ff" }}
-          href={`https://realitio.github.io/#!/question/${question.questionID}`}
+          href={`https://reality.eth.link/app/index.html#!/network/${chainID}/question/${realitioContractAddress}-${question.questionID}`}
           target="_blank"
           rel="noopener noreferrer"
         >
