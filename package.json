@@ -26,7 +26,8 @@
     "yarn": "1.22.15"
   },
   "prettier": {
-    "tabWidth": 2
+    "tabWidth": 2,
+    "printWidth": 160
   },
   "devDependencies": {
     "@kleros/file-to-ipfs": "^0.3.2",
