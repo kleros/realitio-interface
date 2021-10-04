@@ -4,6 +4,7 @@ import Web3 from "web3";
 import RealitioContract from "../assets/contracts/realitio.json";
 import RealitioProxyContract from "../assets/contracts/realitio-proxy.json";
 import RealityLogo from "../assets/images/realitio_logo.png";
+import { populatedJSONForTemplate } from "@reality.eth/reality-eth-lib/formatters/question";
 
 class RealitioDisplayInterface extends Component {
   state = { question: null };
@@ -13,13 +14,15 @@ class RealitioDisplayInterface extends Component {
 
     const message = JSON.parse(decodeURIComponent(window.location.search.substring(1)));
 
-    const { arbitrableContractAddress, arbitratorContractAddress, disputeID, chainID, jsonRpcUrl } = message;
+    const { arbitrableContractAddress, arbitratorContractAddress, disputeID, chainID, arbitratorJsonRpcUrl, arbitrableJsonRpcUrl, jsonRpcUrl } = message;
 
-    const web3 = new Web3(decodeURIComponent(jsonRpcUrl) || window.web3.currentProvider);
+    const web3 = new Web3(
+      (arbitratorJsonRpcUrl && decodeURIComponent(arbitratorJsonRpcUrl)) ||
+        (arbitrableJsonRpcUrl && decodeURIComponent(arbitrableJsonRpcUrl)) ||
+        (jsonRpcUrl && decodeURIComponent(jsonRpcUrl))
+    );
 
-    if (!arbitrableContractAddress || !disputeID || !arbitratorContractAddress) return;
-
-    let question = {};
+    if (!arbitrableContractAddress || !disputeID || !arbitratorContractAddress || (!arbitrableJsonRpcUrl && !arbitrableJsonRpcUrl && !jsonRpcUrl)) return;
 
     const realitioProxyContractInstance = new web3.eth.Contract(RealitioProxyContract.abi, arbitrableContractAddress);
 
@@ -37,7 +40,6 @@ class RealitioDisplayInterface extends Component {
     if (disputeIDToQuestionIDLogs.length !== 1) return;
 
     const questionID = disputeIDToQuestionIDLogs[0].returnValues._questionID;
-    question.questionID = questionID;
 
     const questionEventLog = await realitioContractInstance.getPastEvents("LogNewQuestion", {
       filter: {
@@ -56,21 +58,18 @@ class RealitioDisplayInterface extends Component {
       toBlock: "latest",
     });
 
-    const template = JSON.parse(templateEventLog[0].returnValues.question_text);
-
-    const questionText = questionEventLog[0].returnValues.question.split("\u241f");
-    question.text = questionText;
-
-    this.setState({ question, template, chainID, realitioContractAddress });
+    this.setState({
+      questionID,
+      chainID,
+      realitioContractAddress,
+      rawQuestion: questionEventLog[0].returnValues.question,
+      rawTemplate: templateEventLog[0].returnValues.question_text,
+    });
   }
 
   render() {
-    const { question, template, chainID, realitioContractAddress } = this.state;
-    if (!question) return <div />;
-
-    for (var i = 0; i < question.text.length; i++) {
-      template.title = template.title.replace("%s", question.text[i]);
-    }
+    const { questionID, chainID, realitioContractAddress, rawQuestion, rawTemplate } = this.state;
+    if (!questionID) return <div />;
 
     return (
       <div
@@ -101,11 +100,11 @@ class RealitioDisplayInterface extends Component {
             wordBreak: "break-word",
           }}
         >
-          {template.title}
+          {populatedJSONForTemplate(rawTemplate, rawQuestion).title}
         </div>
         <a
           style={{ color: "#2093ff" }}
-          href={`https://reality.eth.link/app/index.html#!/network/${chainID}/question/${realitioContractAddress}-${question.questionID}`}
+          href={`https://reality.eth.link/app/index.html#!/network/${chainID}/question/${realitioContractAddress}-${questionID}`}
           target="_blank"
           rel="noopener noreferrer"
         >

@@ -10,6 +10,7 @@
     "build": "react-scripts build"
   },
   "dependencies": {
+    "@reality.eth/reality-eth-lib": "^3.0.0",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "web3": "^1.5.3"
