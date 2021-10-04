@@ -12,7 +12,6 @@
   "dependencies": {
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
-    "react-helmet": "^6.1.0",
     "web3": "^1.5.3"
   },
   "browserslist": [
