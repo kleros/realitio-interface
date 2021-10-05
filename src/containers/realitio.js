@@ -13,6 +13,7 @@ class RealitioDisplayInterface extends Component {
     if (window.location.search[0] !== "?") return;
 
     const message = JSON.parse(decodeURIComponent(window.location.search.substring(1)));
+    console.debug(message);
 
     const { arbitrableContractAddress, arbitratorContractAddress, disputeID, chainID, arbitratorJsonRpcUrl, arbitrableJsonRpcUrl, jsonRpcUrl } = message;
 
@@ -22,7 +23,10 @@ class RealitioDisplayInterface extends Component {
         (jsonRpcUrl && decodeURIComponent(jsonRpcUrl))
     );
 
-    if (!arbitrableContractAddress || !disputeID || !arbitratorContractAddress || (!arbitrableJsonRpcUrl && !arbitrableJsonRpcUrl && !jsonRpcUrl)) return;
+    if (!arbitrableContractAddress || !disputeID || !arbitratorContractAddress || (!arbitrableJsonRpcUrl && !arbitrableJsonRpcUrl && !jsonRpcUrl)) {
+      console.error("Evidence display is missing critical information.");
+      return;
+    }
 
     const realitioProxyContractInstance = new web3.eth.Contract(RealitioProxyContract.abi, arbitrableContractAddress);
 
