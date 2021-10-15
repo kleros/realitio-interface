@@ -15,18 +15,27 @@ class RealitioDisplayInterface extends Component {
     const message = JSON.parse(decodeURIComponent(window.location.search.substring(1)));
     console.debug(message);
 
-    const { arbitrableContractAddress, arbitratorContractAddress, disputeID, chainID, arbitratorJsonRpcUrl, arbitrableJsonRpcUrl, jsonRpcUrl } = message;
+    const {
+      arbitrableContractAddress,
+      arbitratorContractAddress,
+      disputeID,
+      arbitratorChainID,
+      arbitrableChainID,
+      chainID,
+      arbitratorJsonRpcUrl,
+      arbitrableJsonRpcUrl,
+      jsonRpcUrl,
+    } = message;
 
-    const web3 = new Web3(
-      (arbitratorJsonRpcUrl && decodeURIComponent(arbitratorJsonRpcUrl)) ||
-        (arbitrableJsonRpcUrl && decodeURIComponent(arbitrableJsonRpcUrl)) ||
-        (jsonRpcUrl && decodeURIComponent(jsonRpcUrl))
-    );
+    const rpcURL = arbitrableJsonRpcUrl || arbitratorJsonRpcUrl || jsonRpcUrl;
+    const cid = arbitrableChainID || arbitratorChainID || chainID;
 
-    if (!arbitrableContractAddress || !disputeID || !arbitratorContractAddress || (!arbitrableJsonRpcUrl && !arbitrableJsonRpcUrl && !jsonRpcUrl)) {
+    if (!rpcURL || !disputeID || !arbitratorContractAddress || !cid) {
       console.error("Evidence display is missing critical information.");
       return;
     }
+
+    const web3 = new Web3(rpcURL && decodeURIComponent(rpcURL));
 
     const realitioProxyContractInstance = new web3.eth.Contract(RealitioProxyContract.abi, arbitrableContractAddress);
 
@@ -64,7 +73,7 @@ class RealitioDisplayInterface extends Component {
 
     this.setState({
       questionID,
-      chainID,
+      chainID: cid,
       realitioContractAddress,
       rawQuestion: questionEventLog[0].returnValues.question,
       rawTemplate: templateEventLog[0].returnValues.question_text,
