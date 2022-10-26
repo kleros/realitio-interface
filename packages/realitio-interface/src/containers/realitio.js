@@ -5,6 +5,7 @@ import RealitioContract from "../assets/contracts/realitio.json";
 import RealitioProxyContract from "../assets/contracts/realitio-proxy.json";
 import RealityLogo from "../assets/images/realitio_logo.png";
 import { populatedJSONForTemplate } from "@reality.eth/reality-eth-lib/formatters/question";
+import DOMPurify from 'isomorphic-dompurify';
 
 class RealitioDisplayInterface extends Component {
   state = { question: null };
@@ -84,6 +85,11 @@ class RealitioDisplayInterface extends Component {
     const { questionID, chainID, realitioContractAddress, rawQuestion, rawTemplate } = this.state;
     if (!questionID) return <div />;
 
+    const questionJSON = populatedJSONForTemplate(rawTemplate, rawQuestion);
+    const safeMarkdown = questionJSON.format === 'text/markdown' && !(questionJSON.errors && questionJSON.errors.unsafe_markdown);
+    const questionTitleHTML = safeMarkdown? DOMPurify.sanitize(questionJSON["title-markdown-html"]): '';
+    const questionTitle = safeMarkdown? '': questionJSON["title"];
+
     return (
       <div
         style={{
@@ -113,8 +119,8 @@ class RealitioDisplayInterface extends Component {
             wordBreak: "break-word",
           }}
         >
-          {populatedJSONForTemplate(rawTemplate, rawQuestion).title}
-        </div>
+          <div dangerouslySetInnerHTML={{__html: questionTitleHTML}} /></div>
+          {questionTitle}
         <a
           style={{ color: "#2093ff" }}
           href={`https://reality.eth.link/app/index.html#!/network/${chainID}/question/${realitioContractAddress}-${questionID}`}
