@@ -1,7 +1,5 @@
 import React, { Component } from "react";
 import Web3 from "web3";
-
-import RealitioContract from "../assets/contracts/realitio.json";
 import RealitioProxyContract from "../assets/contracts/realitio-proxy.json";
 import RealityLogo from "../assets/images/realitio_logo.png";
 import { populatedJSONForTemplate } from "@reality.eth/reality-eth-lib/formatters/question";
@@ -41,43 +39,38 @@ class RealitioDisplayInterface extends Component {
     const realitioProxyContractInstance = new web3.eth.Contract(RealitioProxyContract.abi, arbitrableContractAddress);
 
     const realitioContractAddress = await realitioProxyContractInstance.methods.realitio().call();
-    const realitioContractInstance = new web3.eth.Contract(RealitioContract.abi, realitioContractAddress);
+    const disputeIDToQuestionIDLogs = await realitioProxyContractInstance.methods.externalIDtoLocalID(disputeID).call();
+    if (!disputeIDToQuestionIDLogs) return;
 
-    const disputeIDToQuestionIDLogs = await realitioProxyContractInstance.getPastEvents("DisputeIDToQuestionID", {
-      filter: {
-        _disputeID: disputeID,
-      },
-      fromBlock: 0,
-      toBlock: "latest",
-    });
+    const questionID = web3.utils.toHex(disputeIDToQuestionIDLogs);
 
-    if (disputeIDToQuestionIDLogs.length !== 1) return;
+    const realityGraphGnosis = 'https://api.thegraph.com/subgraphs/name/realityeth/realityeth-gnosis';
 
-    const questionID = disputeIDToQuestionIDLogs[0].returnValues._questionID;
+    console.log(questionID)
 
-    const questionEventLog = await realitioContractInstance.getPastEvents("LogNewQuestion", {
-      filter: {
-        question_id: questionID,
-      },
-      fromBlock: 0,
-      toBlock: "latest",
-    });
+    const queryQuestion = `{
+      questions(first:5, where: {questionId: "${questionID}"}){
+        data
+        template{
+          questionText
+        }
+      }
+    }`
 
-    const templateID = questionEventLog[0].returnValues.template_id;
-    const templateEventLog = await realitioContractInstance.getPastEvents("LogNewTemplate", {
-      filter: {
-        template_id: templateID,
-      },
-      fromBlock: 0,
-      toBlock: "latest",
-    });
+    const res = await fetch(realityGraphGnosis, {
+      method: 'POST',
+      body: JSON.stringify({
+        query: queryQuestion
+      })
+    }).then(res => res.json())
+    console.log(res)
 
     this.setState({
       questionID,
       chainID: cid,
       realitioContractAddress,
-      rawQuestion: questionEventLog[0].returnValues.question,
-      rawTemplate: templateEventLog[0].returnValues.question_text,
+      rawQuestion: res.data.questions[0].data,
+      rawTemplate: res.data.questions[0].template.questionText,
     });
   }
 
@@ -86,8 +79,11 @@ class RealitioDisplayInterface extends Component {
     if (!questionID) return <div />;
 
     const questionJSON = populatedJSONForTemplate(rawTemplate, rawQuestion);
+    console.log('questionJSON')
+    console.log(questionJSON)
+    console.log(questionJSON.errors)
     const safeMarkdown = questionJSON.format === 'text/markdown' && !(questionJSON.errors && questionJSON.errors.unsafe_markdown);
-    const questionTitleHTML = safeMarkdown? DOMPurify.sanitize(questionJSON["title-markdown-html"]): '';
+    const questionTitleHTML = safeMarkdown? DOMPurify.sanitize(questionJSON["title_html"]): '';
     const questionTitle = safeMarkdown? '': questionJSON["title"];
 
     return (

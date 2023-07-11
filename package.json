@@ -1,6 +1,46 @@
 {
-  "name": "reality-eth",
+  "name": "reality-evidence-interface",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Sam Vitello <sam.j.vitello@gmail.com>",
+  "license": "MIT",
+  "homepage": "./",
+  "scripts": {
+    "start": "react-scripts --openssl-legacy-provider start",
+    "build": "react-scripts --openssl-legacy-provider build"
+  },
+  "dependencies": {
+    "@reality.eth/reality-eth-lib": "^3.2.23",
+    "buffer": "^6.0.3",
+    "isomorphic-dompurify": "^0.23.0",
+    "node-fetch": "^3.3.1",
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6",
+    "util": "^0.12.5",
+    "web3": "^1.5.3"
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ],
+  "volta": {
+    "node": "10.24.1",
+    "yarn": "1.22.15"
+  },
+  "prettier": {
+    "tabWidth": 2,
+    "printWidth": 160
+  },
   "devDependencies": {
-    "lerna": "^4.0.0"
+    "@kleros/file-to-ipfs": "^0.3.2",
+    "react-scripts": "^4.0.3"
+  },
+  "eslintConfig": {
+    "env": {
+      "browser": true,
+      "node": true
+    }
   }
 }
