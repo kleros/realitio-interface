@@ -14,6 +14,15 @@ class RealitioDisplayInterface extends Component {
     const message = JSON.parse(decodeURIComponent(window.location.search.substring(1)));
     console.debug(message);
 
+    const subgraphs = {
+      1: 'https://api.thegraph.com/subgraphs/name/realityeth/realityeth',
+      5: 'https://api.thegraph.com/subgraphs/name/realityeth/realityeth-goerli',
+      10: 'https://api.thegraph.com/subgraphs/name/realityeth/realityeth-optimism',
+      100: 'https://api.thegraph.com/subgraphs/name/realityeth/realityeth-gnosis',
+      42161: 'https://api.thegraph.com/subgraphs/name/realityeth/realityeth-arbitrum',
+      421613: 'https://api.thegraph.com/subgraphs/name/realityeth/realityeth-arbitrum-goerli',
+    }
+
     const {
       arbitrableContractAddress,
       arbitratorContractAddress,
@@ -44,7 +53,6 @@ class RealitioDisplayInterface extends Component {
 
     const questionID = web3.utils.toHex(disputeIDToQuestionIDLogs);
 
-    const realityGraphGnosis = 'https://api.thegraph.com/subgraphs/name/realityeth/realityeth-gnosis';
 
     const queryQuestion = `{
       questions(first:5, where: {questionId: "${questionID}"}){
@@ -55,7 +63,8 @@ class RealitioDisplayInterface extends Component {
       }
     }`
 
-    const res = await fetch(realityGraphGnosis, {
+
+    const res = await fetch(subgraphs[cid], {
       method: 'POST',
       body: JSON.stringify({
         query: queryQuestion
