@@ -46,8 +46,6 @@ class RealitioDisplayInterface extends Component {
 
     const realityGraphGnosis = 'https://api.thegraph.com/subgraphs/name/realityeth/realityeth-gnosis';
 
-    console.log(questionID)
-
     const queryQuestion = `{
       questions(first:5, where: {questionId: "${questionID}"}){
         data
@@ -63,7 +61,6 @@ class RealitioDisplayInterface extends Component {
         query: queryQuestion
       })
     }).then(res => res.json())
-    console.log(res)
 
     this.setState({
       questionID,
@@ -79,9 +76,7 @@ class RealitioDisplayInterface extends Component {
     if (!questionID) return <div />;
 
     const questionJSON = populatedJSONForTemplate(rawTemplate, rawQuestion);
-    console.log('questionJSON')
-    console.log(questionJSON)
-    console.log(questionJSON.errors)
+
     const safeMarkdown = questionJSON.format === 'text/markdown' && !(questionJSON.errors && questionJSON.errors.unsafe_markdown);
     const questionTitleHTML = safeMarkdown? DOMPurify.sanitize(questionJSON["title_html"]): '';
     const questionTitle = safeMarkdown? '': questionJSON["title"];
