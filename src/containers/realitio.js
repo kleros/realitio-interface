@@ -120,7 +120,7 @@ class RealitioDisplayInterface extends Component {
           }}
         >
           <div dangerouslySetInnerHTML={{__html: questionTitleHTML}} /></div>
-          {questionTitle}
+          <div >{questionTitle}</div>
         <a
           style={{ color: "#2093ff" }}
           href={`https://reality.eth.link/app/index.html#!/network/${chainID}/question/${realitioContractAddress}-${questionID}`}
